@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MAILFLOW — AI-Powered Email Support Agent Dashboard">
+    <title>MAILFLOW Dashboard</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<div class="app-layout">
+
+    <!-- ── Sidebar ──────────────────────────────── -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">✉</div>
+            <div class="brand-text">
+                <h1>MAILFLOW</h1>
+                <span>AI Agent Suite</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a class="nav-item active" data-section="dashboard" onclick="switchSection('dashboard')">
+                <span class="icon">📊</span>
+                <span class="nav-label">Dashboard</span>
+            </a>
+            <a class="nav-item" data-section="tickets" onclick="switchSection('tickets')">
+                <span class="icon">🎫</span>
+                <span class="nav-label">Tickets</span>
+            </a>
+            <a class="nav-item" data-section="compose" onclick="switchSection('compose')">
+                <span class="icon">✏️</span>
+                <span class="nav-label">Compose</span>
+            </a>
+            <a class="nav-item" data-section="settings" onclick="switchSection('settings')">
+                <span class="icon">⚙️</span>
+                <span class="nav-label">Settings</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="agent-status-pill">
+                <span class="status-dot"></span>
+                <span>Agents Online</span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ── Main Content ─────────────────────────── -->
+    <main class="main-content">
+
+        <!-- ===== DASHBOARD ===== -->
+        <div id="section-dashboard" class="section active">
+            <div class="page-header">
+                <h2>Dashboard</h2>
+                <p>Real-time overview of your email support pipeline</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="icon-bg">📨</div>
+                    <div class="label">Total Tickets</div>
+                    <div class="value" id="stat-total">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon-bg">🔧</div>
+                    <div class="label">Technical</div>
+                    <div class="value" id="stat-technical">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon-bg">💳</div>
+                    <div class="label">Billing</div>
+                    <div class="value" id="stat-billing">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon-bg">✅</div>
+                    <div class="label">Replied</div>
+                    <div class="value" id="stat-replied">0</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="card">
+                    <div class="card-header"><h3>Email Traffic</h3></div>
+                    <div class="card-body"><div class="chart-container"><canvas id="trafficChart"></canvas></div></div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3>Category Breakdown</h3></div>
+                    <div class="card-body"><div class="chart-container"><canvas id="categoryChart"></canvas></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== TICKETS ===== -->
+        <div id="section-tickets" class="section">
+            <div class="page-header">
+                <h2>Ticket Logs</h2>
+                <p>Browse and filter all support tickets</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>All Tickets</h3>
+                    <button class="btn btn-outline" onclick="loadTickets()">↻ Refresh</button>
+                </div>
+                <div class="card-body">
+                    <div class="filter-bar">
+                        <select id="filter-category" onchange="filterTickets()">
+                            <option value="">All Categories</option>
+                            <option value="Technical Issue">Technical</option>
+                            <option value="Billing Issue">Billing</option>
+                            <option value="Account Issue">Account</option>
+                            <option value="General Inquiry">General</option>
+                        </select>
+                        <input type="text" id="filter-search" placeholder="Search tickets…" oninput="filterTickets()">
+                    </div>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Ticket ID</th>
+                                    <th>Sender</th>
+                                    <th>Subject</th>
+                                    <th>Category</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Replied</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tickets-body">
+                                <tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:40px;">Loading tickets…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== COMPOSE ===== -->
+        <div id="section-compose" class="section">
+            <div class="page-header">
+                <h2>Compose Email</h2>
+                <p>Send a new support email directly from the dashboard</p>
+            </div>
+            <div class="card" style="max-width:700px;">
+                <div class="card-header"><h3>New Email</h3></div>
+                <div class="card-body">
+                    <form id="compose-form" onsubmit="sendEmail(event)">
+                        <div class="form-group">
+                            <label>Recipient</label>
+                            <input type="email" id="compose-to" placeholder="recipient@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Subject</label>
+                            <input type="text" id="compose-subject" placeholder="Email subject…" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Message</label>
+                            <textarea id="compose-body" placeholder="Write your message…" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">✉ Send Email</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== SETTINGS ===== -->
+        <div id="section-settings" class="section">
+            <div class="page-header">
+                <h2>Settings</h2>
+                <p>System configuration and department mappings</p>
+            </div>
+            <div class="settings-grid">
+                <div class="card">
+                    <div class="card-header"><h3>Department Emails</h3></div>
+                    <div class="card-body">
+                        <div class="config-item"><span class="config-label">Technical Issue</span><span class="config-value">technical.mailflow@gmail.com</span></div>
+                        <div class="config-item"><span class="config-label">Billing Issue</span><span class="config-value">payment.mailflow@gmail.com</span></div>
+                        <div class="config-item"><span class="config-label">Account Issue</span><span class="config-value">auth.mailflow@gmail.com</span></div>
+                        <div class="config-item"><span class="config-label">General Inquiry</span><span class="config-value">general.mailflow@gmail.com</span></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header"><h3>AI Model</h3></div>
+                    <div class="card-body">
+                        <div class="config-item"><span class="config-label">Classifier</span><span class="config-value">BERT (fine-tuned)</span></div>
+                        <div class="config-item"><span class="config-label">Reply Generator</span><span class="config-value">Gemini 1.5 Flash</span></div>
+                        <div class="config-item"><span class="config-label">Categories</span><span class="config-value">4 classes</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+/* ── Navigation ──────────────────────────────── */
+function switchSection(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    document.querySelector('[data-section="' + name + '"]').classList.add('active');
+    if (name === 'tickets') loadTickets();
+    if (name === 'dashboard') loadStats();
+}
+
+/* ── Data Loading ────────────────────────────── */
+let allTickets = [];
+
+async function loadStats() {
+    try {
+        const res = await fetch('/api/stats');
+        const data = await res.json();
+        document.getElementById('stat-total').textContent = data.total || 0;
+        document.getElementById('stat-technical').textContent = data.categories['Technical Issue'] || 0;
+        document.getElementById('stat-billing').textContent = data.categories['Billing Issue'] || 0;
+        document.getElementById('stat-replied').textContent = data.replied || 0;
+        updateCharts(data);
+    } catch(e) {
+        console.log('Stats not available:', e);
+    }
+}
+
+async function loadTickets() {
+    try {
+        const res = await fetch('/api/tickets');
+        allTickets = await res.json();
+        renderTickets(allTickets);
+    } catch(e) {
+        document.getElementById('tickets-body').innerHTML =
+            '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:40px;">Could not load tickets. Is the database connected?</td></tr>';
+    }
+}
+
+function renderTickets(tickets) {
+    const tbody = document.getElementById('tickets-body');
+    if (!tickets.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:40px;">No tickets found</td></tr>';
+        return;
+    }
+    tbody.innerHTML = tickets.map(t => {
+        const catClass = t.category.toLowerCase().includes('technical') ? 'badge-technical'
+            : t.category.toLowerCase().includes('billing') ? 'badge-billing'
+            : t.category.toLowerCase().includes('account') ? 'badge-account' : 'badge-general';
+        const replied = t.response_sent ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-failed">No</span>';
+        const date = t.created_at ? new Date(t.created_at).toLocaleDateString() : '—';
+        return `<tr>
+            <td><strong>${t.ticket_id}</strong></td>
+            <td>${t.sender || '—'}</td>
+            <td>${(t.subject || '').substring(0, 50)}</td>
+            <td><span class="badge ${catClass}">${t.category}</span></td>
+            <td><span class="badge badge-new">${t.status}</span></td>
+            <td>${date}</td>
+            <td>${replied}</td>
+        </tr>`;
+    }).join('');
+}
+
+function filterTickets() {
+    const cat = document.getElementById('filter-category').value;
+    const q = document.getElementById('filter-search').value.toLowerCase();
+    const filtered = allTickets.filter(t => {
+        if (cat && t.category !== cat) return false;
+        if (q && !t.ticket_id.toLowerCase().includes(q) && !(t.subject||'').toLowerCase().includes(q) && !(t.sender||'').toLowerCase().includes(q)) return false;
+        return true;
+    });
+    renderTickets(filtered);
+}
+
+/* ── Charts ──────────────────────────────────── */
+let trafficChart, categoryChart;
+
+function updateCharts(data) {
+    const cats = data.categories || {};
+    const labels = Object.keys(cats);
+    const values = Object.values(cats);
+
+    // Category Doughnut
+    const catCtx = document.getElementById('categoryChart').getContext('2d');
+    if (categoryChart) categoryChart.destroy();
+    categoryChart = new Chart(catCtx, {
+        type: 'doughnut',
+        data: {
+            labels: labels.length ? labels : ['No data'],
+            datasets: [{
+                data: values.length ? values : [1],
+                backgroundColor: ['#3b82f6','#f59e0b','#8b5cf6','#22c55e'],
+                borderWidth: 0, borderRadius: 4,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 16, font: { family: 'Inter' } } } },
+            cutout: '65%',
+        }
+    });
+
+    // Traffic Bar
+    const barCtx = document.getElementById('trafficChart').getContext('2d');
+    if (trafficChart) trafficChart.destroy();
+    trafficChart = new Chart(barCtx, {
+        type: 'bar',
+        data: {
+            labels: labels.length ? labels : ['No data'],
+            datasets: [{
+                label: 'Tickets',
+                data: values.length ? values : [0],
+                backgroundColor: 'rgba(99,102,241,0.6)',
+                borderRadius: 8, borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(99,102,241,0.06)' }, ticks: { color: '#64748b', font: { family: 'Inter' } } },
+                x: { grid: { display: false }, ticks: { color: '#64748b', font: { family: 'Inter' } } }
+            }
+        }
+    });
+}
+
+/* ── Compose ─────────────────────────────────── */
+async function sendEmail(e) {
+    e.preventDefault();
+    const payload = {
+        sender: 'Dashboard User',
+        subject: document.getElementById('compose-subject').value,
+        body: document.getElementById('compose-body').value,
+        recipient: document.getElementById('compose-to').value,
+    };
+    try {
+        const res = await fetch('/predict', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+        if (res.ok) { alert('Email sent successfully!'); document.getElementById('compose-form').reset(); }
+        else { alert('Failed to send email.'); }
+    } catch(err) { alert('Error: ' + err.message); }
+}
+
+/* ── Init ────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => { loadStats(); });
+</script>
+
+</body>
+</html>
