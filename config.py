@@ -14,13 +14,25 @@ load_dotenv()
 EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS", "")
 EMAIL_APP_PASSWORD = os.getenv("EMAIL_APP_PASSWORD", "")
 
-# ── MySQL Database ───────────────────────────────────────────────────
+# ── Database Mode ────────────────────────────────────────────────────
+# "mysql" for local setup, "sqlite" for hosted/lightweight setup
+DB_MODE = os.getenv("DB_MODE", "sqlite")
+
+# MySQL config (used when DB_MODE=mysql)
 DB_CONFIG = {
     "host": os.getenv("DB_HOST", "localhost"),
     "user": os.getenv("DB_USER", "root"),
     "password": os.getenv("DB_PASSWORD", ""),
     "database": os.getenv("DB_NAME", "email_tickets"),
 }
+
+# SQLite config (used when DB_MODE=sqlite)
+SQLITE_PATH = os.getenv("SQLITE_PATH", "mailflow.db")
+
+# ── Classifier Mode ─────────────────────────────────────────────────
+# "bert" = local fine-tuned BERT model (requires email_bert_model/)
+# "gemini" = Google Gemini API classification (lightweight, no model files needed)
+CLASSIFIER_MODE = os.getenv("CLASSIFIER_MODE", "gemini")
 
 # ── Google Gemini API ────────────────────────────────────────────────
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
