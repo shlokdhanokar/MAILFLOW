@@ -10,7 +10,6 @@
 
 **MAILFLOW** is an intelligent, multi-agent email support system that automatically reads incoming customer emails, classifies them, forwards them to the correct department, and generates personalised AI replies — all orchestrated by a coordinator and visualized on a premium React dashboard.
 ---
-
 ## Architecture
 
 ```
